@@ -1,0 +1,18 @@
+cargo-features = ["edition2024"]
+
+[package]
+name = "aoc_2025"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+aoc_driver = "0.3.6"
+itertools = { version = "0.14" }
+peg = "0.8"
+
+[dev-dependencies]
+pretty_assertions = "1.4"
+
+[lib]
+name = "aoc_2025"
+path = "src/lib.rs"
