@@ -49,7 +49,7 @@ impl Solution for Part1 {
 		let mut turns = parse(input,parser::stride).map(isize::from);
 
 		let zeroes = std::iter::successors(Some(50), |v| {
-			turns.next().map(|t| (v+t) % 100)
+			turns.next().map(|t| (v+t).rem_euclid(100))
 		}).filter(Zero::is_zero).count();
 
 		zeroes
