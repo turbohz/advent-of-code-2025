@@ -1,6 +1,7 @@
 // https://adventofcode.com/2025/day/1
 
 use super::*;
+use num::Zero;
 
 enum Dir { L, R }
 
@@ -42,7 +43,7 @@ fn solve_1(input: &str) -> String {
 
 	let zeroes = std::iter::successors(Some(50), |v| {
 		turns.next().map(|t| (v+t) % 100)
-	}).filter(|v| *v == 0).count();
+	}).filter(Zero::is_zero).count();
 
 	zeroes.to_string()
 }
