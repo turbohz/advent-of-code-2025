@@ -17,6 +17,28 @@ impl From<Stride> for isize {
 	}
 }
 
+struct Dial(usize);
+
+impl Default for Dial {
+	fn default() -> Self {
+		Self(50)
+	}
+}
+
+
+impl Dial {
+
+	fn turn(&mut self, s:Stride) {
+		let t = isize::from(s);
+		let v = self.0 as isize;
+		self.0 = (v+t).rem_euclid(100) as usize;
+	}
+
+	fn value(&self) -> usize {
+		self.0
+	}
+}
+
 peg::parser! {
 	grammar parser() for str {
 		rule dir() -> Dir
@@ -46,11 +68,13 @@ impl Solution for Part1 {
 
 	fn solve(input:&str) -> impl Display {
 
-		let mut turns = parse(input,parser::stride).map(isize::from);
+		let mut dial = Dial::default();
+		let strides = parse(input,parser::stride);
 
-		let zeroes = std::iter::successors(Some(50), |v| {
-			turns.next().map(|t| (v+t).rem_euclid(100))
-		}).filter(Zero::is_zero).count();
+		let zeroes = strides
+			.map(|s| { dial.turn(s); dial.value() })
+			.filter(Zero::is_zero)
+			.count();
 
 		zeroes
 	}
@@ -82,6 +106,23 @@ mod test {
 
 		let expected = vec![ -68, -30, 48, -5, 60, -55, -1,-99, 14, -82 ];
 		let actual:Vec<isize> = turns.map(Into::into).collect();
+
+		assert_eq!(actual,expected);
+	}
+
+	#[test]
+	fn test_dial() {
+
+		let mut dial = Dial::default();
+
+		let strides = parse(EXAMPLE_INPUT,parser::stride);
+
+		let expected = vec![ 82, 52, 0, 95, 55, 0, 99, 0, 14, 32 ];
+
+		let actual:Vec<_> = strides.map(|s| {
+			dial.turn(s);
+			dial.value()
+		}).collect();
 
 		assert_eq!(actual,expected);
 	}
