@@ -37,15 +37,23 @@ peg::parser! {
 	}
 }
 
-fn solve_1(input: &str) -> String {
+struct Part1;
 
-	let mut turns = parse(input,parser::stride).map(isize::from);
+impl Solution for Part1 {
 
-	let zeroes = std::iter::successors(Some(50), |v| {
-		turns.next().map(|t| (v+t) % 100)
-	}).filter(Zero::is_zero).count();
+	const DAY: i32 = 1;
+	const PART: Part = Part::Part1;
 
-	zeroes.to_string()
+	fn solve(input:&str) -> impl Display {
+
+		let mut turns = parse(input,parser::stride).map(isize::from);
+
+		let zeroes = std::iter::successors(Some(50), |v| {
+			turns.next().map(|t| (v+t) % 100)
+		}).filter(Zero::is_zero).count();
+
+		zeroes
+	}
 }
 
 #[cfg(test)]
@@ -82,14 +90,14 @@ mod test {
 	fn test_example() {
 
 		let expected = "3";
-		let actual = solve_1(EXAMPLE_INPUT);
+		let actual = Part1::solve(EXAMPLE_INPUT).to_string();
 
 		assert_eq!(actual,expected)
 	}
 
 	#[test]
 	fn submit()-> Result<(), AppError> {
-		try_submit(Day(1), solve_1, Part1)?;
+		Part1::try_submit()?;
 		Ok(())
 	}
 }
