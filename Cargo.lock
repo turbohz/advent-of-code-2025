@@ -22,6 +22,7 @@ name = "aoc_2025"
 version = "0.1.0"
 dependencies = [
  "aoc_driver",
+ "indoc",
  "itertools",
  "peg",
  "pretty_assertions",
@@ -286,6 +287,15 @@ checksum = "3acae9609540aa318d1bc588455225fb2085b9ed0c4f6bd0d9d5bcd86f1a0344"
 dependencies = [
  "icu_normalizer",
  "icu_properties",
+]
+
+[[package]]
+name = "indoc"
+version = "2.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "79cf5c93f93228cf8efb3ba362535fb11199ac548a09ce117c9b1adc3030d706"
+dependencies = [
+ "rustversion",
 ]
 
 [[package]]

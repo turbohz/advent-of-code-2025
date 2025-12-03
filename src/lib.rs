@@ -2,6 +2,9 @@
 
 pub const YEAR:i32 = 2025;
 
+#[cfg(test)]
+pub mod days;
+
 #[allow(unused)]
 #[derive(Debug)]
 pub enum AppError {
