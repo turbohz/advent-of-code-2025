@@ -15,6 +15,7 @@ peg = "0.8"
 
 [dev-dependencies]
 pretty_assertions = "1.4"
+rstest = { version = "0.26.1", default-features = false }
 
 [lib]
 name = "aoc_2025"
