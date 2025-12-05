@@ -1,6 +1,7 @@
 #![allow(unused)]
 
 mod day01;
+mod day03;
 
 use super::*;
 
