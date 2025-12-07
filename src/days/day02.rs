@@ -81,6 +81,41 @@ impl Solution for Part1 {
 	}
 }
 
+
+struct Part2;
+
+impl Solution for Part2 {
+
+	const DAY: i32 = 2;
+	const PART: Part = Part::Part2;
+
+
+	fn solve(input:&str) -> impl Display {
+		use num::Integer;
+
+		let ranges = parse(input,parser::ranges).next().unwrap();
+
+		let mut total:usize = 0;
+
+		for r in ranges {
+
+			for v in r {
+
+				let s = v.to_string();
+				let limit = s.len() / 2;
+
+				total += (1..=limit)
+					.filter_map(|chunk_size| has_eq_chunks_of(&s, chunk_size).then(|| v))
+					// Dedupe ids that have multiple repeating requences
+					.unique()
+					.sum::<usize>()
+			}
+		}
+
+		total
+	}
+}
+
 #[cfg(test)]
 mod test {
 	use super::*;
@@ -88,10 +123,18 @@ mod test {
 	const EXAMPLE_INPUT:&str = r#"11-22,95-115,998-1012,1188511880-1188511890,222220-222224,1698522-1698528,446443-446449,38593856-38593862,565653-565659,824824821-824824827,2121212118-2121212124"#;
 
 	#[test]
-	fn test_part1_example() {
+	fn test_examples() {
+
+		// part 1
 
 		let expected = "1227775554";
 		let actual = Part1::solve(EXAMPLE_INPUT).to_string();
+		assert_eq!(actual,expected);
+
+		// part 2
+
+		let expected = "4174379265";
+		let actual = Part2::solve(EXAMPLE_INPUT).to_string();
 		assert_eq!(actual,expected);
 	}
 
@@ -112,6 +155,7 @@ mod test {
 	#[test]
 	fn submit()-> Result<(), AppError> {
 		Part1::try_submit()?;
+		Part2::try_submit()?;
 		Ok(())
 	}
 }
