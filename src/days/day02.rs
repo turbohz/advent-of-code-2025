@@ -19,6 +19,33 @@ peg::parser! {
 	}
 }
 
+fn has_eq_chunks_of(str:&str, chunk_size:usize) -> bool {
+
+	let len = str.len();
+
+	// Chunk size has to be multiple of size
+
+	len % chunk_size == 0 && {
+
+		// ... and first chunk is repeated all along
+
+		let mut repeats_upto:usize = 0;
+
+		let chars:Vec<char> = str.chars().collect();
+
+		for i in 0..str.len() {
+			if chars[i%chunk_size] == chars[i] {
+				repeats_upto = i
+			} else {
+				break;
+			}
+		}
+
+		repeats_upto == len-1
+	}
+
+}
+
 struct Part1;
 
 impl Solution for Part1 {
@@ -41,14 +68,11 @@ impl Solution for Part1 {
 
 				let s = v.to_string();
 
-				let (midpoint,rem) = s.len().div_rem(&2);
+				let (div,rem) = s.len().div_rem(&2);
+				let can_halve = rem == 0;
 
-				if rem == 0 {
-
-					let (fst,snd) = s.split_at(midpoint);
-					if fst == snd {
-						total += v
-					}
+				if can_halve && has_eq_chunks_of(&s,div) {
+					total += v
 				}
 			}
 		}
