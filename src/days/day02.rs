@@ -25,7 +25,7 @@ fn has_eq_chunks_of(str:&str, chunk_size:usize) -> bool {
 
 	// Chunk size has to be multiple of size
 
-	len % chunk_size == 0 && {
+	len.is_multiple_of(chunk_size) && {
 
 		// ... and first chunk is repeated all along
 
@@ -105,7 +105,9 @@ impl Solution for Part2 {
 				let limit = s.len() / 2;
 
 				total += (1..=limit)
-					.filter_map(|chunk_size| has_eq_chunks_of(&s, chunk_size).then(|| v))
+					.filter_map(|chunk_size|
+						has_eq_chunks_of(&s, chunk_size).then_some(v)
+					)
 					// Dedupe ids that have multiple repeating requences
 					.unique()
 					.sum::<usize>()

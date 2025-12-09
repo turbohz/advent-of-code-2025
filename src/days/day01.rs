@@ -24,7 +24,7 @@ impl Stride {
 
 	fn from_raw(d:isize) -> Stride {
 		let dir = if d >= 0 { Dir::R } else { Dir::L };
-		Stride { dir, dis: d.abs() as usize }
+		Stride { dir, dis: d.unsigned_abs() }
 	}
 }
 
@@ -84,15 +84,13 @@ impl Solution for Part1 {
 		let mut dial = Dial::default();
 		let strides = parse(input,parser::stride);
 
-		let zeroes = strides
+		strides
 			.map(|s| {
 				dial.turn(s);
 				dial.value()
 			})
 			.filter(Zero::is_zero)
-			.count();
-
-		zeroes
+			.count()
 	}
 }
 

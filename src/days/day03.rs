@@ -90,9 +90,9 @@ impl Solution for Part2 {
 
 		banks.map(|b| {
 
-			let ref nums = b.max_of(12);
+			let nums = b.max_of(12);
 			// assemble digits
-			nums.into_iter()
+			nums.iter()
 				.map(u8::to_string)
 				.join("")
 				.parse::<usize>()
