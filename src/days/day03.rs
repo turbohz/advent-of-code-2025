@@ -22,17 +22,29 @@ impl BatteryBank {
 
 	fn max_pair(&self) -> (u8,u8) {
 
-		// look for max value, excluding last
-		let ref fst_haystack = self[..self.len()-1];
+		let nums = self.max_of(2);
 
-		let (fst_at,fst) = first_max(fst_haystack);
+		(nums[0],nums[1])
+	}
 
-		// look for max value among the following values
-		let ref snd_haystack = self[fst_at+1..];
+	fn max_of(&self,digits:usize) -> Vec<u8> {
 
-		let (_,snd) = first_max(snd_haystack);
+		let mut res:Vec<u8> = Vec::with_capacity(digits);
 
-		(fst,snd)
+		// Range will be adjusted as follows:
+		// start: will be next position from last value found
+		// end: starts with a reserve for N-1 digits,
+		// increase limit as less values remain
+
+		let mut range = 0..=self.len()-digits;
+
+		while res.len() < digits {
+			let (at,val) = first_max(&self[range.clone()]);
+			res.push(val);
+			range = range.start()+at+1..=range.end()+1
+		}
+
+		res
 	}
 
 }
@@ -61,6 +73,31 @@ impl Solution for Part1 {
 		banks.map(|b| {
 			let (fst,snd) = b.max_pair();
 			(fst*10+snd) as usize
+		}).sum::<usize>()
+	}
+}
+
+struct Part2;
+
+impl Solution for Part2 {
+
+	const DAY: i32 = 3;
+	const PART: Part = Part::Part2;
+
+	fn solve(input:&str) -> impl Display {
+
+		let banks = parse(input,parser::bank);
+
+		banks.map(|b| {
+
+			let ref nums = b.max_of(12);
+			// assemble digits
+			nums.into_iter()
+				.map(u8::to_string)
+				.join("")
+				.parse::<usize>()
+				.unwrap()
+
 		}).sum::<usize>()
 	}
 }
@@ -95,12 +132,23 @@ mod test {
 	#[test]
 	fn test_battery_bank() {
 
+		// part 1
+
 		let mut banks = parse(EXAMPLE_INPUT,parser::bank);
 
 		assert_eq!((9,8),banks.next().unwrap().max_pair());
 		assert_eq!((8,9),banks.next().unwrap().max_pair());
 		assert_eq!((7,8),banks.next().unwrap().max_pair());
 		assert_eq!((9,2),banks.next().unwrap().max_pair());
+
+		// part 2
+
+		let mut banks = parse(EXAMPLE_INPUT,parser::bank);
+
+		assert_eq!(*parser::bank("987654321111").unwrap(),banks.next().unwrap().max_of(12));
+		assert_eq!(*parser::bank("811111111119").unwrap(),banks.next().unwrap().max_of(12));
+		assert_eq!(*parser::bank("434234234278").unwrap(),banks.next().unwrap().max_of(12));
+		assert_eq!(*parser::bank("888911112111").unwrap(),banks.next().unwrap().max_of(12));
 	}
 
 	#[test]
@@ -113,6 +161,7 @@ mod test {
 	#[test]
 	fn submit()-> Result<(), AppError> {
 		Part1::try_submit()?;
+		Part2::try_submit()?;
 		Ok(())
 	}
 }
