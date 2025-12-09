@@ -7,21 +7,34 @@ use derive_more::{Deref, From};
 #[derive(From,Deref)]
 struct BatteryBank(Vec<u8>);
 
-impl BatteryBank {
-	// NOTICE: the built-in `iter::max` function returns the maybe last max value,
-	// but we want the first (leftmost).
-	fn leftmost_max_val_at(&self) -> (usize,u8) {
+// Returns the leftmost max value in a slice,
+// along with its offset.
+fn first_max(slice:&[u8])->(usize,u8) {
 
-		assert!(self.len() > 0);
-
-		self.iter().copied().enumerate().fold((0,0), |(first_max_at, max_val),(at,val)| {
-			if val > max_val {
-				(at,val)
-			} else {
-				(first_max_at,max_val)
-			}
-		})
+	slice.iter().copied().enumerate()
+		.max_set_by(|(_,v1),(_,v2)| v1.cmp(v2))
+		.first()
+		.unwrap()
+		.to_owned()
 	}
+
+impl BatteryBank {
+
+	fn max_pair(&self) -> (u8,u8) {
+
+		// look for max value, excluding last
+		let ref fst_haystack = self[..self.len()-1];
+
+		let (fst_at,fst) = first_max(fst_haystack);
+
+		// look for max value among the following values
+		let ref snd_haystack = self[fst_at+1..];
+
+		let (_,snd) = first_max(snd_haystack);
+
+		(fst,snd)
+	}
+
 }
 
 peg::parser! {
@@ -45,25 +58,10 @@ impl Solution for Part1 {
 
 		let banks = parse(input,parser::bank);
 
-		let total:usize = banks.map(|b| {
-
-			let (at,d) = b.leftmost_max_val_at();
-
-			let res = if at == b.len()-1 {
-				// If it's in the last position,
-				// Find _any_ max value among the rest
-				(b.iter().copied().rev().skip(1).max().unwrap(),d)
-			} else {
-				// Find _any_ max value following it
-				(d,b.iter().copied().skip(at+1).max().unwrap())
-			};
-
-			(res.0 * 10 + res.1) as usize
-
-		}).sum();
-
-
-		total
+		banks.map(|b| {
+			let (fst,snd) = b.max_pair();
+			(fst*10+snd) as usize
+		}).sum::<usize>()
 	}
 }
 
@@ -95,24 +93,21 @@ mod test {
 	}
 
 	#[test]
+	fn test_battery_bank() {
+
+		let mut banks = parse(EXAMPLE_INPUT,parser::bank);
+
+		assert_eq!((9,8),banks.next().unwrap().max_pair());
+		assert_eq!((8,9),banks.next().unwrap().max_pair());
+		assert_eq!((7,8),banks.next().unwrap().max_pair());
+		assert_eq!((9,2),banks.next().unwrap().max_pair());
+	}
+
+	#[test]
 	fn test_part1_example() {
 		let actual = Part1::solve(EXAMPLE_INPUT).to_string();
 		let expected = "357";
 		assert_eq!(actual,expected);
-	}
-
-
-	#[rstest]
-	#[case ("12345",(4,5))]
-	#[case ("52345",(0,5))]
-	#[case ("62345",(0,6))]
-	fn test_bank_leftmost_max(
-		#[case] bank_str:&str,
-		#[case] max:(usize,u8)
-	) {
-
-		let bank = parser::bank(bank_str).unwrap();
-		assert_eq!(bank.leftmost_max_val_at(),max);
 	}
 
 	#[test]
