@@ -211,10 +211,8 @@ mod test {
 		assert_eq!(actual,expected);
 	}
 
-	#[test]
-	fn submit()-> Result<(), AppError> {
-		Part1::try_submit()?;
-		Part2::try_submit()?;
-		Ok(())
-	}
+	// SOLUTIONS
+
+	submit! { Part1 }
+	submit! { Part2 }
 }
