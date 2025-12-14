@@ -1,6 +1,6 @@
 //! https://adventofcode.com/2025/day/4
 
-use std::{num::Saturating, ops::{Index, RangeBounds, RangeInclusive}};
+use std::{num::Saturating, ops::{Index, IndexMut, RangeBounds, RangeInclusive}};
 use derive_more::IsVariant;
 use num::{Bounded, clamp, integer::div_rem};
 
@@ -32,6 +32,12 @@ impl Index<usize> for Grid {
 
 	fn index(&self, index: usize) -> &Self::Output {
 		&self.data[index]
+	}
+}
+
+impl IndexMut<usize> for Grid {
+	fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+		&mut self.data[index]
 	}
 }
 
@@ -72,7 +78,11 @@ impl Grid {
 		left..=(left+width-1)
 	}
 
-	fn row_neighbours(&self, i:usize)-> impl Iterator<Item=usize> {
+	fn roll_locations(&self) -> impl Iterator<Item=usize> {
+		self.range().filter(|&i| self[i].is_roll())
+	}
+
+	fn row_neighbours(&self, i:usize) -> impl Iterator<Item=usize> {
 		let row_bounds = self.row(i);
 		let (min,max) = (*row_bounds.start(), *row_bounds.end());
 		[
@@ -102,6 +112,10 @@ impl Grid {
 			// exclude 'i'
 			.filter(move |&v| v != i)
 	}
+
+	fn has_reachable_roll_at(&self,i:usize) -> bool {
+		self.neighbours(i).filter(|&i| self[i].is_roll()).count() < 4
+	}
 }
 
 peg::parser! {
@@ -126,19 +140,41 @@ impl Solution for Part1 {
 
 		let grid = Grid::new(input);
 
-		let reachable = |i:usize| -> bool {
-			let rolls = grid.neighbours(i)
-				.filter(|&i| grid[i].is_roll())
-				.count();
-			rolls < 4
-		};
-
-		grid.range().filter(|&i| {
-			grid[i].is_roll() && reachable(i)
+		grid.roll_locations().filter(|&i| {
+			grid.has_reachable_roll_at(i)
 		}).count()
 	}
 }
+struct Part2;
 
+impl Solution for Part2 {
+
+	const DAY: i32 = 4;
+	const PART: Part = Part::Part2;
+
+	fn solve(input:&str) -> impl Display {
+
+		let mut grid = Grid::new(input);
+
+		let mut total_removed = 0;
+
+		// TODO: keep state for known roll locations
+
+		loop {
+
+			let to_be_removed = grid.roll_locations()
+				.filter(|&i| grid.has_reachable_roll_at(i))
+				.collect_vec();
+
+			if to_be_removed.is_empty() {
+				break total_removed;
+			} else {
+				to_be_removed.iter().for_each(|&i| { grid[i] = Cell::Empty });
+				total_removed += to_be_removed.len();
+			}
+		}
+	}
+}
 #[cfg(test)]
 mod test {
 	use super::*;
@@ -164,10 +200,16 @@ mod test {
 		let actual = Part1::solve(EXAMPLE_INPUT).to_string();
 		let expected = "13";
 
+		assert_eq!(actual,expected);
+
+		let actual = Part2::solve(EXAMPLE_INPUT).to_string();
+		let expected = "43";
+
 		assert_eq!(actual,expected)
 	}
 
 	// SOLUTIONS
 
 	submit! { Part1 }
+	submit! { Part2 }
 }
