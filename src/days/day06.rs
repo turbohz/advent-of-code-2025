@@ -1,0 +1,143 @@
+// https://adventofcode.com/2025/day/6
+
+use super::*;
+
+#[derive(Debug,Clone,Copy,PartialEq)]
+enum Op {
+	Sum,
+	Prod,
+}
+
+impl Op {
+	fn compute(&self,lhs:usize,rhs:usize) -> usize {
+		match self {
+			Op::Sum  => lhs+rhs,
+			Op::Prod => lhs*rhs,
+		}
+	}
+}
+
+peg::parser! {
+
+	grammar parser() for str {
+
+		rule _ = [' ']
+		rule __ = _+
+
+		rule digit() -> char =
+			[c if c.is_ascii_digit()]
+
+		rule number() -> usize =
+			ds:$(digit()+) {? ds.parse().or(Err("Expected usize value")) }
+
+		rule op() -> Op = op:['+'|'*'] {
+			match op {
+				'+' => Op::Sum,
+				'*' => Op::Prod,
+				_ => unreachable!()
+			}
+		}
+
+		pub rule operands() -> Vec<usize> =
+			__? operands:(number() ++ __) __? { operands }
+
+		pub rule operators() -> Vec<Op> =
+			__? operators:(op() ++ __ ) __? { operators }
+
+	}
+}
+
+fn parse(input:&str) -> (Vec<Vec<usize>>, Vec<Op>) {
+
+	let mut iter = input.lines().peekable();
+
+	let mut all_opnds:Vec<Vec<usize>> = Default::default();
+	let mut operators:Vec<Op> = Default::default();
+
+	loop {
+
+		let Some(line) = iter.next() else {
+			assert!(!operators.is_empty());
+			break (all_opnds,operators)
+		};
+
+		if iter.peek().is_some() {
+
+			// Parse operands line
+			let operands = parser::operands(line).unwrap();
+			all_opnds.push(operands);
+
+		} else {
+
+			// Last line, parse operators
+			operators = parser::operators(line).unwrap();
+		}
+	}
+}
+
+fn compute_cols(operands:Vec<Vec<usize>>,operators:Vec<Op>) -> Vec<usize> {
+
+	operators.iter()
+		.enumerate()
+		.map(|(i,optr)| {
+			let opnds = operands.iter().map(|v| v[i]);
+			opnds.reduce(|a,b| optr.compute(a,b)).unwrap()
+		})
+		.collect_vec()
+}
+
+struct Part1;
+
+impl Solution for Part1 {
+
+	const DAY: i32 = 6;
+	const PART: Part = Part::Part1;
+
+	fn solve(input:&str) -> impl Display {
+
+		let (operands,operators) = parse(input);
+
+		compute_cols(operands, operators).iter().sum::<usize>()
+	}
+}
+
+#[cfg(test)]
+mod test {
+
+	use super::*;
+
+	const EXAMPLE_INPUT:&str = concat!(
+		"123 328  51 64 \n",
+		" 45 64  387 23 \n",
+		"  6 98  215 314\n",
+		"*   +   *   +  "
+	);
+
+	#[test]
+	fn test_parser() {
+
+		let (operands,operators) = parse(EXAMPLE_INPUT);
+
+		assert_eq!(operands[0], vec![123, 328,  51,  64]);
+		assert_eq!(operands[1], vec![ 45,  64, 387,  23]);
+		assert_eq!(operands[2], vec![  6,  98, 215, 314]);
+
+		assert_eq!(operators, vec![Op::Prod, Op::Sum, Op::Prod, Op::Sum]);
+	}
+
+	#[test]
+	fn test_compute() {
+
+		let (operands,operators) = parse(EXAMPLE_INPUT);
+		let mut computed = compute_cols(operands, operators).into_iter();
+
+		assert_eq!(computed.next().unwrap(),33210);
+		assert_eq!(computed.next().unwrap(),490);
+		assert_eq!(computed.next().unwrap(),4243455);
+		assert_eq!(computed.next().unwrap(),401);
+	}
+
+	// SOLUTIONS
+
+	submit! { Part1 }
+}
