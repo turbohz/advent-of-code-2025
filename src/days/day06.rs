@@ -1,5 +1,7 @@
 // https://adventofcode.com/2025/day/6
 
+use itertools::IntoChunks;
+
 use super::*;
 
 #[derive(Debug,Clone,Copy,PartialEq)]
@@ -17,12 +19,20 @@ impl Op {
 	}
 }
 
+#[derive(Debug,Clone,Copy,PartialEq)]
+enum Col {
+	Sep,
+	Opnd(usize),
+	OpndOptr(usize,Op)
+}
+
 peg::parser! {
 
 	grammar parser() for str {
 
 		rule _ = [' ']
 		rule __ = _+
+		rule EOL() = ![_]
 
 		rule digit() -> char =
 			[c if c.is_ascii_digit()]
@@ -30,19 +40,20 @@ peg::parser! {
 		rule number() -> usize =
 			ds:$(digit()+) {? ds.parse().or(Err("Expected usize value")) }
 
-		rule op() -> Op = op:['+'|'*'] {
-			match op {
-				'+' => Op::Sum,
-				'*' => Op::Prod,
-				_ => unreachable!()
-			}
-		}
+		rule op() -> Op =
+			"+" { Op::Sum  } /
+			"*" { Op::Prod }
 
 		pub rule operands() -> Vec<usize> =
 			__? operands:(number() ++ __) __? { operands }
 
 		pub rule operators() -> Vec<Op> =
-			__? operators:(op() ++ __ ) __? { operators }
+			operators:(op() ++ __ ) __? { operators }
+
+		pub rule col() -> Col =
+			_+                      EOL() { Col::Sep } /
+			_* n:number() _+        EOL() { Col::Opnd(n) } /
+			_* n:number() _* o:op() EOL() { Col::OpndOptr(n,o) }
 
 	}
 }
@@ -101,6 +112,63 @@ impl Solution for Part1 {
 	}
 }
 
+fn transposed_chunks(lines:Vec<&str>)-> Vec<String> {
+
+	let cols = lines[0].len();
+	let rows = lines.len();
+
+	let coords = (0..cols).rev().cartesian_product(0..rows);
+
+	coords
+		.map(|(x,y)| unsafe { lines[y].get_unchecked(x..=x) })
+		.chunks(rows)
+		.into_iter()
+		.map(|c| c.collect_vec().join(""))
+		.collect_vec()
+}
+
+struct Part2;
+
+impl Solution for Part2 {
+
+	const DAY: i32 = 6;
+	const PART: Part = Part::Part2;
+
+	fn solve(input:&str) -> impl Display {
+
+		let lines = input.lines().collect_vec();
+
+		let cols = transposed_chunks(lines).into_iter()
+			.map(|ref c| parser::col(c).expect("Column should parse into a Col instance"))
+			.collect_vec().into_iter();
+
+		cols
+			.chunk_by(|col| matches!(col,Col::Sep))
+			.into_iter()
+			.map(|(is_sep,group)| {
+
+				if is_sep { return 0 };
+
+				// Process Operation Group
+
+				let (opnds,mut optrs):(Vec<_>, Vec<_>) = group.into_iter()
+					.map(|col:Col|
+						match col {
+							Col::Opnd(opnd) => (opnd,None),
+							Col::OpndOptr(opnd,optr) => (opnd,Some(optr)),
+							_ => unreachable!()
+						}
+					)
+					.unzip();
+
+				let optr = optrs.into_iter().flatten().next().unwrap();
+
+				opnds.into_iter().reduce(|a,b| optr.compute(a,b)).unwrap()
+			})
+			.sum::<usize>()
+	}
+}
+
 #[cfg(test)]
 mod test {
 
@@ -137,7 +205,56 @@ mod test {
 		assert_eq!(computed.next().unwrap(),401);
 	}
 
+	#[test]
+	fn test_transpose() {
+
+		let lines = EXAMPLE_INPUT.lines().collect_vec();
+		let mut cols = transposed_chunks(lines).into_iter();
+
+		assert_eq!(cols.next().unwrap(), "  4 ");
+		assert_eq!(cols.next().unwrap(), "431 ");
+		assert_eq!(cols.next().unwrap(), "623+");
+		assert_eq!(cols.next().unwrap(), "    ");
+		assert_eq!(cols.next().unwrap(), "175 ");
+		assert_eq!(cols.next().unwrap(), "581 ");
+		assert_eq!(cols.next().unwrap(), " 32*");
+		assert_eq!(cols.next().unwrap(), "    ");
+		assert_eq!(cols.next().unwrap(), "8   ");
+		assert_eq!(cols.next().unwrap(), "248 ");
+		assert_eq!(cols.next().unwrap(), "369+");
+		assert_eq!(cols.next().unwrap(), "    ");
+		assert_eq!(cols.next().unwrap(), "356 ");
+		assert_eq!(cols.next().unwrap(), "24  ");
+		assert_eq!(cols.next().unwrap(), "1  *");
+	}
+
+	#[test]
+	fn test_parse_col() {
+
+		use parser::col;
+
+		assert_eq!(col("  4 ").unwrap(),Col::Opnd(4));
+		assert_eq!(col("431 ").unwrap(),Col::Opnd(431));
+		assert_eq!(col("623+").unwrap(),Col::OpndOptr(623,Op::Sum));
+	}
+
+	#[test]
+	fn test_example() {
+
+		let actual = Part1::solve(EXAMPLE_INPUT).to_string();
+		let expected = "4277556";
+
+		assert_eq!(actual,expected);
+
+		let actual = Part2::solve(EXAMPLE_INPUT).to_string();
+		let expected = "3263827";
+
+		assert_eq!(actual,expected);
+
+	}
+
 	// SOLUTIONS
 
 	submit! { Part1 }
+	submit! { Part2 }
 }
