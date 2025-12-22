@@ -1,11 +1,15 @@
 #![allow(unused)]
 
+mod lib;
+use lib::*;
+
 mod day01;
 mod day02;
 mod day03;
 mod day04;
 mod day05;
 mod day06;
+mod day07;
 
 use super::*;
 
