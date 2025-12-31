@@ -7,6 +7,12 @@ use derive_more::{Deref, From};
 #[derive(From,Deref)]
 struct BatteryBank(Vec<u8>);
 
+impl BatteryBank {
+	pub fn iter<'a>(&'a self) -> impl 'a + Iterator<Item=u8> {
+		self.0.iter().copied()
+	}
+}
+
 // Returns the leftmost max value in a slice,
 // along with its offset.
 fn first_max(slice:&[u8])->(usize,u8) {
@@ -120,13 +126,19 @@ mod test {
 	#[test]
 	fn test_parse() {
 
+		use itertools::assert_equal;
+
 		let pack:Vec<BatteryBank> = parse(EXAMPLE_INPUT,parser::bank).collect();
 
-		let actual_first_bank = &pack.first();
-		let expected_first_bank = vec![9,8,7,6,5,4,3,2,1,1,1,1,1,1,1];
+		let actual = pack.first().unwrap().iter();
+		let expected = vec![9,8,7,6,5,4,3,2,1,1,1,1,1,1,1];
 
-		let actual_last_bank = &pack.last();
-		let expected_last_bank = vec![8,1,8,1,8,1,9,1,1,1,1,2,1,1,1];
+		assert_equal(actual,expected);
+
+		let actual = pack.last().unwrap().iter();
+		let expected = vec![8,1,8,1,8,1,9,1,1,1,1,2,1,1,1];
+
+		assert_equal(actual,expected);
 	}
 
 	#[test]
