@@ -1,10 +1,8 @@
 // https://adventofcode.com/2025/day/7
 
-use std::{fmt::Debug, iter::{Scan, from_fn}, ops::Range, slice::IterMut, vec};
+use std::{fmt::Debug, vec};
 
-use derive_more::{Deref, DerefMut, From, Index, IndexMut, derive};
-use itertools::repeat_n;
-use num::traits::float;
+use derive_more::{Deref, DerefMut, From, Index, IndexMut};
 
 use super::{*, Grid as GenericGrid};
 
@@ -202,7 +200,7 @@ impl<'a> ManifoldScanner<'a> {
 
 			let updates = self.manifold.update(&self.beam_front);
 
-			let mut sorted_split_upds = updates.iter()
+			let sorted_split_upds = updates.iter()
 				.sorted_by(|&a,&b| a.prev().cmp(&b.prev()) );
 
 			for &upd in sorted_split_upds {

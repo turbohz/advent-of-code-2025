@@ -1,8 +1,8 @@
 //! https://adventofcode.com/2025/day/4
 
-use std::{num::Saturating, ops::{Index, IndexMut, RangeBounds, RangeInclusive}};
+use std::ops::{Index, IndexMut, RangeInclusive};
 use derive_more::IsVariant;
-use num::{Bounded, clamp, integer::div_rem};
+use num::integer::div_rem;
 
 use super::*;
 

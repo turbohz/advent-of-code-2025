@@ -1,7 +1,7 @@
 // https://adventofcode.com/2025/day/1
 
 use super::*;
-use num::{Zero, zero};
+use num::Zero;
 
 #[derive(Clone, Copy)]
 enum Dir { L, R }
@@ -22,6 +22,7 @@ impl Stride {
 		self.as_raw()
 	}
 
+	#[allow(dead_code)]
 	fn from_raw(d:isize) -> Stride {
 		let dir = if d >= 0 { Dir::R } else { Dir::L };
 		Stride { dir, dis: d.unsigned_abs() }
@@ -153,7 +154,6 @@ impl Solution for Part2 {
 mod test {
 
 	use super::*;
-	use rstest::*;
 
 	const EXAMPLE_INPUT:&str = indoc! {
 	r#"

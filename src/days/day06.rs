@@ -1,6 +1,5 @@
 // https://adventofcode.com/2025/day/6
 
-use itertools::IntoChunks;
 
 use super::*;
 
@@ -151,7 +150,7 @@ impl Solution for Part2 {
 
 				// Process Operation Group
 
-				let (opnds,mut optrs):(Vec<_>, Vec<_>) = group.into_iter()
+				let (opnds,optrs):(Vec<_>, Vec<_>) = group.into_iter()
 					.map(|col:Col|
 						match col {
 							Col::Opnd(opnd) => (opnd,None),

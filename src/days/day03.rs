@@ -112,7 +112,6 @@ impl Solution for Part2 {
 mod test {
 
 	use super::*;
-	use rstest::*;
 
 	const EXAMPLE_INPUT:&str = indoc! {
 		r#"

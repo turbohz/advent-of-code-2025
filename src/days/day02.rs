@@ -91,7 +91,7 @@ impl Solution for Part2 {
 
 
 	fn solve(input:&str) -> impl Display {
-		use num::Integer;
+		
 
 		let ranges = parse(input,parser::ranges).next().unwrap();
 

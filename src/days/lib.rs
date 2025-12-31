@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::ops::{Index, IndexMut};
 
 use super::*;
@@ -66,7 +68,6 @@ mod size {
 
 pub use size::*;
 
-use derive_more::{Deref, Eq, From};
 use num::{Integer, integer::div_rem};
 
 #[inline]

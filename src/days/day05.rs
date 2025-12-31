@@ -39,7 +39,7 @@ impl Solution for Part1 {
 
 	fn solve(input:&str) -> impl Display {
 
-		let (ranges,mut ids) = parse(input);
+		let (ranges,ids) = parse(input);
 
 		ids.filter(|id| {
 			ranges.iter().any(|r| r.contains(id))
@@ -107,7 +107,7 @@ impl Solution for Part2 {
 
 		let (ranges,_) = parse(input);
 
-		let mut ranges = ranges
+		let ranges = ranges
 			.into_iter()
 			.map(FreshRange::from)
 			.sorted_unstable_by(|a,b| a.fst.cmp(&b.fst));
@@ -116,7 +116,7 @@ impl Solution for Part2 {
 		struct State {
 			acc: usize,
 			ran: Option<FreshRange>
-		};
+		}
 
 
 		impl State {
