@@ -1,3 +1,5 @@
+#![allow(unused_imports)]
+
 mod lib;
 use lib::*;
 
@@ -12,7 +14,8 @@ mod day07;
 use super::*;
 
 use std::fmt::Display;
-use itertools::Itertools;
+use itertools::{Itertools,assert_equal};
+
 use indoc::indoc;
 use aoc_driver::Part;
 use peg::{error::ParseError, str::LineCol};
