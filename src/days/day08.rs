@@ -251,6 +251,47 @@ impl Part1 {
 	}
 }
 
+struct Part2;
+
+impl Solution for Part2 {
+
+	const DAY: i32 = 8;
+	const PART: Part = Part::Part2;
+
+	fn solve(input:&str) -> impl Display {
+
+		let box_locations = parse(input).into_iter();
+		let distance_graph:UnGraph<Location3,Distance> = distance_graph(box_locations).into_graph();
+		let total_nodes = distance_graph.node_count();
+		let mut node_seen_graph = distance_graph.map(|_,_|false, |_,_|());
+
+		let mut sorted_edge_refs_by_weight = distance_graph
+			.edge_references()
+			.sorted_unstable_by_key(EdgeReference::weight);
+
+		let mut connected_nodes = 0;
+
+		loop {
+
+			let edge = sorted_edge_refs_by_weight.next()
+				.expect("A full circuit should be formed before running out of potential connections");
+
+			for nix in [edge.source(),edge.target()] {
+				if !node_seen_graph[nix] {
+					node_seen_graph[nix] = true;
+					connected_nodes += 1;
+				}
+			}
+
+			if connected_nodes >= total_nodes {
+
+				break distance_graph[edge.source()].x * distance_graph[edge.target()].x
+			}
+		}
+
+	}
+}
+
 #[cfg(test)]
 mod test {
 
@@ -308,7 +349,16 @@ mod test {
 		assert_eq!(actual,expected);
 	}
 
+	#[test]
+	fn test_part2() {
+
+		let expected = "25272";
+		let actual = Part2::solve(EXAMPLE_INPUT).to_string();
+		assert_eq!(actual,expected)
+	}
+
 	// SOLUTIONS
 
 	submit! { Part1 }
+	submit! { Part2 }
 }
