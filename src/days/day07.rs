@@ -169,15 +169,14 @@ impl BeamUpdate {
 	}
 }
 
-impl<'a> From<&'a mut Manifold> for ManifoldScanner<'a> {
-	fn from(manifold: &'a mut Manifold) -> Self {
+impl<'a> ManifoldScanner<'a> {
+
+	pub fn new(manifold: &'a mut Manifold) -> Self {
+
 		let beam_front = BeamFront::new(manifold.stride());
 
 		Self { manifold, beam_front }
 	}
-}
-
-impl<'a> ManifoldScanner<'a> {
 
 	pub fn scan(&mut self) -> &BeamFront {
 		self.scan_downto(self.manifold.size.height-1)
@@ -238,7 +237,7 @@ impl<'a> ManifoldScanner<'a> {
 #[allow(clippy::needless_lifetimes)]
 impl Manifold {
 
-	fn tick<'tick>(&mut self, beam_front:&'tick BeamFront) -> Vec<BeamUpdate> {
+	fn tick(&mut self, beam_front:&BeamFront) -> Vec<BeamUpdate> {
 
 		let BeamFront { y: row, items: beams } = beam_front;
 		let mut updates:Vec<BeamUpdate> = vec![];
@@ -280,7 +279,7 @@ impl Manifold {
 
 	/// Advances beams, returning the resulting BeamUpdates.
 	/// Internally calls [Manifold::tick], and updates the grid.
-	pub fn update<'tick>(&mut self, beam_front:&'tick BeamFront) -> Vec<BeamUpdate> {
+	pub fn update(&mut self, beam_front:&BeamFront) -> Vec<BeamUpdate> {
 
 		use BeamUpdate as BU;
 
@@ -320,8 +319,8 @@ impl Solution for Part1 {
 
 	fn solve(input:&str) -> anyhow::Result<impl Display> {
 
-		let ref mut manifold:Manifold = input.into();
-		let mut scanner:ManifoldScanner = manifold.into();
+		let mut manifold:Manifold = input.into();
+		let mut scanner = ManifoldScanner::new(&mut manifold);
 
 		let res = scanner.scan();
 
@@ -341,8 +340,8 @@ impl Solution for Part2 {
 
 	fn solve(input:&str) -> anyhow::Result<impl Display> {
 
-		let ref mut manifold:Manifold = input.into();
-		let mut scanner:ManifoldScanner = manifold.into();
+		let mut manifold:Manifold = input.into();
+		let mut scanner = ManifoldScanner::new(&mut manifold);
 
 		let final_beam_front = scanner.scan();
 
