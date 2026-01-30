@@ -4,6 +4,10 @@ use std::ops::{Index, IndexMut};
 
 use super::*;
 
+pub trait IntoInner<T> {
+	fn into_inner(self) -> T;
+}
+
 mod location {
 
 	#[derive(Debug,Clone,Copy,PartialEq,Eq)]
