@@ -1,7 +1,7 @@
 #![allow(unused_imports)]
 
-mod lib;
-use lib::*;
+mod util;
+use util::*;
 
 mod day01;
 mod day02;

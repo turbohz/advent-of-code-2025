@@ -1,7 +1,7 @@
 // https://adventofcode.com/2025/day/10
 
 
-use derive_more::{Deref, From, Into};
+use derive_more::{AsMut, AsRef, Deref, From, Into};
 
 use super::*;
 
@@ -41,14 +41,8 @@ impl MachineState {
 }
 
 // Represents the flips the button performs, as a bitmask
-#[derive(Debug,Clone,Copy,Default,PartialEq,Eq)]
+#[derive(Debug,Clone,Copy,Default,PartialEq,Eq,AsRef,AsMut)]
 struct Button(u16);
-
-impl AsRef<u16> for Button {
-	fn as_ref(&self) -> &u16 {
-		&self.0
-	}
-}
 
 impl<T:IntoIterator<Item=u8>> From<T> for Button {
 	fn from(value: T) -> Self {
