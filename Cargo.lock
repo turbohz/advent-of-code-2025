@@ -32,6 +32,7 @@ version = "0.1.0"
 dependencies = [
  "aoc_driver",
  "derive_more",
+ "funty",
  "indoc",
  "itertools",
  "num",
@@ -215,6 +216,12 @@ checksum = "cb4cb245038516f5f85277875cdaa4f7d2c9a0fa0468de06ed190163b1581fcf"
 dependencies = [
  "percent-encoding",
 ]
+
+[[package]]
+name = "funty"
+version = "3.0.0-rc2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aa590387383a574eb0a02370ad4b29c72e6ddd6b0afc2f6e2890bdb4be6d3a92"
 
 [[package]]
 name = "getrandom"
