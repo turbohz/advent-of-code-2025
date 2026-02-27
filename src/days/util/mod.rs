@@ -9,6 +9,9 @@ pub use size::*;
 mod location;
 pub use location::*;
 
+mod bits;
+pub use bits::*;
+
 mod grid;
 pub use grid::*;
 
