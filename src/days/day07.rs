@@ -244,6 +244,7 @@ impl<'a> ManifoldScanner<'a> {
 	}
 }
 
+#[allow(clippy::needless_lifetimes)]
 impl Manifold {
 
 	fn tick<'tick>(&mut self, beam_front:&'tick BeamFront) -> Vec<BeamUpdate> {

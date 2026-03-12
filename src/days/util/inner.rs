@@ -16,7 +16,7 @@ impl<V:Copy,T:AsRef<V>> Inner<V> for T {
 	}
 
 	fn into_inner(self) -> V {
-		(&self).as_inner()
+		self.as_inner()
 	}
 }
 

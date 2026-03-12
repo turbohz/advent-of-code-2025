@@ -25,3 +25,7 @@ path = "src/lib.rs"
 [features]
 default = []
 submit = []
+
+[lints.clippy]
+tabs_in_doc_comments = "allow"
+toplevel_ref_arg = "allow"
