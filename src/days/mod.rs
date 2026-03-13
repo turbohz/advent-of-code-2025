@@ -21,6 +21,7 @@ use itertools::{Itertools,assert_equal};
 use indoc::indoc;
 use aoc_driver::Part;
 use peg::{error::ParseError, str::LineCol};
+use std::convert::identity;
 
 trait Ok<T> {
 	fn ok(self) -> anyhow::Result<T>;

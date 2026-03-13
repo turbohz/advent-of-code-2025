@@ -1,39 +1,47 @@
+use std::ops::RangeInclusive;
 
 use super::*;
 
-use derive_more::{AsMut, AsRef, BitAnd, BitOr, BitXor, From, Not};
-use funty::{Fundamental, Integral, Numeric, Unsigned};
+use derive_more::{AsMut, AsRef, BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Display, From, Neg, Not};
+use funty::{AtMost32, Fundamental, Integral, Numeric, Unsigned};
 use num::cast::AsPrimitive;
 
-#[derive(Debug,Default,Clone,Copy,PartialEq,Eq,From,AsRef,AsMut,BitAnd,BitOr,BitXor,Not)]
-pub struct Bits<T:Unsigned>(T);
+#[derive(Default,Clone,Copy,PartialEq,Eq,From,AsRef,AsMut,Display)]
+#[derive(BitAnd,BitAndAssign,BitOr,BitOrAssign,BitXor,BitXorAssign,Not,Neg)]
+#[display("Bits({:01$b})",self.0,T::BITS as usize)]
+pub struct Bits<T:Unsigned>(pub T);
 
-pub fn bits<T:Unsigned>(input:T) -> Bits<T> {
-	Bits(input)
-}
 
-pub trait AsBits<T:Unsigned>: Inner<T> + Sized {
-	fn as_bits(&self) -> Bits<T> {
-		bits(self.into_inner())
+impl<T:Unsigned> std::fmt::Debug for Bits<T> {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		Display::fmt(&self,f)
 	}
 }
 
-impl<V:Unsigned,T:Inner<V>> AsBits<V> for T {}
+pub trait AsBits<T:Unsigned> {
+	fn as_bits(&self) -> Bits<T>;
+}
 
-impl<T:Unsigned,Item:Fundamental> FromIterator<Item> for Bits<T> {
+impl<V:Unsigned,T:Inner<V>> AsBits<V> for T where Self: Sized {
+	fn as_bits(&self) -> Bits<V> {
+		Bits(self.into_inner())
+	}
+}
+
+impl<Itm:Fundamental,T:Unsigned> FromIterator<Itm> for Bits<T> {
 
 	/**
 	 If the iterator is shorter that T::Bits, the value will be padded with zeroes.
 	 If the iterator is longer than T::Bits, the extra value will be ignored.
 	 */
-	fn from_iter<Input: IntoIterator<Item=Item>>(iter: Input) -> Self {
+	fn from_iter<Input: IntoIterator<Item=Itm>>(iter: Input) -> Self {
 
 		use std::iter::repeat;
 
 		let bits = iter
 			.into_iter()
-			// convert vals to 1 or 0
-			.map(|b| { if b.as_bool() { T::ONE } else { T::ZERO }})
+			// convert vals to 1 or 0, by comparing them with zero / false
+			.map(|itm| { if itm.as_bool() { T::ONE } else { T::ZERO }})
 			// pad with zeroess
 			.pad_using(Self::LEN,|_|T::ZERO)
 			// generate value for shifts
@@ -104,8 +112,6 @@ impl<T:Unsigned> BitIter<T> {
 	}
 }
 
-// impl<T:Unsigned> Digits for BitIter<T> {}
-
 impl<T:Unsigned> Bits<T> {
 
 	const LEN:usize = { T::BITS as usize };
@@ -127,6 +133,26 @@ impl<T:Unsigned> Bits<T> {
 
 		Some(Self::from_iter(iter))
 	}
+
+	#[inline]
+	pub fn set<Idx:Integral>(&mut self, i:Idx, set:bool) -> Self {
+
+		debug_assert!(i >= Idx::ZERO && i.as_usize() < Self::LEN);
+
+		let bit = T::ONE.wrapping_shl(i.as_u32());
+
+		if set { self.0 |= bit } else { self.0 &= !bit }
+		*self
+	}
+
+	#[inline]
+	pub fn get<Idx:Integral>(&self, i:Idx) -> bool {
+
+		debug_assert!(i >= Idx::ZERO && i.as_usize() < Self::LEN);
+
+		self.0 >> i.as_u32() & T::ONE == T::ONE
+	}
+
 }
 
 #[cfg(test)]
@@ -141,12 +167,12 @@ mod test {
 	#[test]
 	fn test_bits() {
 
-		assert_eq!(bits(0x00FFu16).into_inner(),0x00FF);
+		assert_eq!(Bits(0x00FFu16).into_inner(),0x00FF);
 
 		#[derive(AsRef)]
 		struct Wrapped(u16);
 
-		assert_eq!(Wrapped(0x00FFu16).as_bits(),bits(0x00FFu16));
+		assert_eq!(Wrapped(0x00FFu16).as_bits(),Bits(0x00FFu16));
 
 		let i = [1u8,1,0,0,1,1,0,0].into_iter();
 
@@ -171,5 +197,11 @@ mod test {
 
 		assert_equal([1,1,0,0,1,0,1,0], bits.iter().digits::<u8>());
 		assert_equal([I,I,O,O,I,O,I,O], bits);
+	}
+
+	fn test_set() {
+
+		assert_eq!(Bits(0b01010011u8).set(2,true), Bits(0b01110011u8));
+		assert_eq!(Bits(0b01010011u8).set(3,false), Bits(0b01000011u8));
 	}
 }

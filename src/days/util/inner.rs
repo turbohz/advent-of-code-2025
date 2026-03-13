@@ -6,7 +6,7 @@ pub trait Inner<V:Copy>: AsRef<V> + Sized {
 pub trait InnerMut<V:Copy>: Inner<V> + AsMut<V> {
 	fn inner_mut(&mut self) -> &mut V;
 	fn map_inner<Mapper>(self,m:Mapper) -> Self where Mapper: Fn(V)->V;
-	fn from(inner:V) -> Self where Self: Default;
+	fn from_inner(inner:V) -> Self where Self: Default;
 }
 
 impl<V:Copy,T:AsRef<V>> Inner<V> for T {
@@ -31,7 +31,7 @@ impl<V:Copy,T:Inner<V>+AsMut<V>> InnerMut<V> for T {
 		self
 	}
 
-	fn from(inner:V) -> Self where Self: Default {
+	fn from_inner(inner:V) -> Self where Self: Default {
 		let mut new = Self::default();
 		*new.inner_mut() = inner;
 		new
