@@ -2,26 +2,21 @@
 
 use std::{fmt::Debug, vec};
 
-use derive_more::{Deref, DerefMut, From, Index, IndexMut};
+use derive_more::{Deref, DerefMut, Display, From, Index, IndexMut};
 
 use super::{*, Grid as GenericGrid};
 
 type Grid = GenericGrid<Item>;
 
 #[derive(Debug,Clone,Copy,PartialEq,Eq)]
+#[derive(Display)]
+#[display("{}",char::from(u8::from(*self)))]
 enum Item {
 	// Initial
 	Empty,
 	Source,
 	Splitter,
 	Beam,
-}
-
-impl Display for Item {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		let b:&[u8;1] = &[(*self).into()];
-		f.write_str(unsafe { str::from_utf8_unchecked(b) })
-	}
 }
 
 impl TryFrom<u8> for Item {
@@ -87,13 +82,9 @@ If the beam is split, only one will keep carrying the split count with it,
 while the other will forget, to avoid double counting.
 */
 #[derive(Clone, Copy)]
+#[derive(Display)]
+#[display("[{:02}|{:02}]",self.splits,self.timelines)]
 struct Beam { splits: usize, timelines: usize }
-
-impl Display for Beam {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		write!(f,"[{:02}|{:02}]",self.splits,self.timelines)
-	}
-}
 
 impl Beam {
 
