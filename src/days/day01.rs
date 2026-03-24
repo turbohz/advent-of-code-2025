@@ -150,6 +150,8 @@ impl Solution for Part2 {
 	}
 }
 
+submit! { Part1, Part2 }
+
 #[cfg(test)]
 mod test {
 
@@ -210,9 +212,4 @@ mod test {
 
 		assert_eq!(actual,expected);
 	}
-
-	// SOLUTIONS
-
-	submit! { Part1 }
-	submit! { Part2 }
 }

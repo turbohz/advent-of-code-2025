@@ -12,10 +12,11 @@ the intention is to choose approches that are interesting to me.
 
 ## Submission
 
-The solution submission process is performed by test functions gated with the "submit" feature.
-
-To run the whole suit of tests, and submit solutions, do:
+The solutions submission are performed by test functions gated with the "solve" feature.
 
 ```
-cargo test --features submit
+# All
+cargo test --release --features solve
+# One
+cargo test --release --features solve day\d{2}::submit
 ```

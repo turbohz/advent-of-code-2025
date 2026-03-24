@@ -1,3 +1,5 @@
 #! /bin/bash
 export RUST_BACKTRACE=0
 export COOKIE=
+export RUSTFLAGS='-C target-cpu=native'
+export LDFLAGS="${LDFLAGS} -fuse-ld=wild"

@@ -24,8 +24,12 @@ path = "src/lib.rs"
 
 [features]
 default = []
-submit = []
+solve = []
 
 [lints.clippy]
 tabs_in_doc_comments = "allow"
 toplevel_ref_arg = "allow"
+
+[profile.release]
+lto = "thin"
+codegen-units = 4

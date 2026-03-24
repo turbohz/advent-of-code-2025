@@ -61,14 +61,21 @@ fn parse<'a,T>(input: &'a str, parse:fn(&'a str) -> Result<T,ParseError<LineCol>
 }
 
 macro_rules! submit {
-	($part:ty) => {
-		::paste::paste! {
-			#[cfg_attr(feature="submit", test)]
-			fn [<test_ $part:lower _submit>]()-> Result<(), $crate::AppError> {
-				<$part as $crate::days::Solution>::try_submit()
-			}
+	($($part:ty),+) => {
+		#[allow(unexpected_cfgs)]
+		#[cfg(all(test,feature="solve"))]
+		mod submit {
+			use super::*;
+			$(
+				::paste::paste! {
+				#[test]
+					fn [<test_ $part:lower _submit>]()-> Result<(), $crate::AppError> {
+						<$part as $crate::days::Solution>::try_submit()
+					}
+				}
+			)+
 		}
-	};
+	}
 }
 
 use submit;

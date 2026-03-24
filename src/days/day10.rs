@@ -309,6 +309,8 @@ impl ButtonPressSequence {
 		})
 	}
 }
+submit! { Part1 }
+
 #[cfg(test)]
 mod test {
 	use super::*;
@@ -406,9 +408,5 @@ mod test {
 
 		assert_eq!(actual,expected);
 	}
-
-	// SOLUTIONS
-
-	submit! { Part1 }
 
 }
