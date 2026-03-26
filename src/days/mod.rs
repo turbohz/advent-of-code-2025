@@ -22,20 +22,38 @@ use indoc::indoc;
 use aoc_driver::Part;
 use peg::{error::ParseError, str::LineCol};
 
+trait Ok<T> {
+	fn ok(self) -> anyhow::Result<T>;
+}
+
+impl<T> Ok<T> for T {
+	fn ok(self) -> anyhow::Result<T> {
+		anyhow::Result::Ok(self)
+	}
+}
+
 trait Solution {
 
 	const DAY: i32;
 	const PART: Part;
 
-	// NOTICE: Using impl Diplay causes lifetie issues when calling
+	// NOTICE: Using impl Diplay causes lifetime issues when calling
 	// `aoc_driver::calculate_and_post`
-	fn solve(input:&str) -> impl Display;
+	fn solve(input:&str) -> anyhow::Result<impl Display>;
 
 	fn try_submit() -> Result<(),AppError> {
 
 		let cookie: String = cookie()?;
 
-		let solve = |input: &str| Self::solve(input).to_string();
+		let solve = |input: &str| -> String {
+			match Self::solve(input) {
+				Ok(solution) => solution.to_string(),
+				Err(err) => {
+					eprintln!("{err}");
+					"".to_string()
+				}
+			}
+		};
 
 		aoc_driver::calculate_and_post(
 			&cookie, YEAR, Self::DAY, Self::PART,

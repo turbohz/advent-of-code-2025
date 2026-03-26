@@ -54,7 +54,7 @@ impl Solution for Part1 {
 	const PART: Part = Part::Part1;
 
 
-	fn solve(input:&str) -> impl Display {
+	fn solve(input:&str) -> anyhow::Result<impl Display> {
 
 		use num::Integer;
 
@@ -77,7 +77,7 @@ impl Solution for Part1 {
 			}
 		}
 
-		total
+		total.ok()
 	}
 }
 
@@ -90,7 +90,7 @@ impl Solution for Part2 {
 	const PART: Part = Part::Part2;
 
 
-	fn solve(input:&str) -> impl Display {
+	fn solve(input:&str) -> anyhow::Result<impl Display> {
 		
 
 		let ranges = parse(input,parser::ranges).next().unwrap();
@@ -114,7 +114,7 @@ impl Solution for Part2 {
 			}
 		}
 
-		total
+		total.ok()
 	}
 }
 
@@ -134,13 +134,13 @@ mod test {
 		// part 1
 
 		let expected = "1227775554";
-		let actual = Part1::solve(EXAMPLE_INPUT).to_string();
+		let actual = Part1::solve(EXAMPLE_INPUT).unwrap().to_string();
 		assert_eq!(actual,expected);
 
 		// part 2
 
 		let expected = "4174379265";
-		let actual = Part2::solve(EXAMPLE_INPUT).to_string();
+		let actual = Part2::solve(EXAMPLE_INPUT).unwrap().to_string();
 		assert_eq!(actual,expected);
 	}
 

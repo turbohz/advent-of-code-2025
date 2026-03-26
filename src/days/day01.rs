@@ -80,7 +80,7 @@ impl Solution for Part1 {
 	const DAY: i32 = 1;
 	const PART: Part = Part::Part1;
 
-	fn solve(input:&str) -> impl Display {
+	fn solve(input:&str) -> anyhow::Result<impl Display> {
 
 		let mut dial = Dial::default();
 		let strides = parse(input,parser::stride);
@@ -92,6 +92,7 @@ impl Solution for Part1 {
 			})
 			.filter(Zero::is_zero)
 			.count()
+			.ok()
 	}
 }
 
@@ -102,7 +103,7 @@ impl Solution for Part2 {
 	const DAY: i32 = 1;
 	const PART: Part = Part::Part2;
 
-	fn solve(input:&str) -> impl Display {
+	fn solve(input:&str) -> anyhow::Result<impl Display> {
 
 		let mut dial = Dial::default();
 		let strides = parse(input,parser::stride);
@@ -146,7 +147,7 @@ impl Solution for Part2 {
 			}
 		}
 
-		zero_crossed
+		zero_crossed.ok()
 	}
 }
 
@@ -203,12 +204,12 @@ mod test {
 	fn test_example() {
 
 		let expected = "3";
-		let actual = Part1::solve(EXAMPLE_INPUT).to_string();
+		let actual = Part1::solve(EXAMPLE_INPUT).unwrap().to_string();
 
 		assert_eq!(actual,expected);
 
 		let expected = "6";
-		let actual = Part2::solve(EXAMPLE_INPUT).to_string();
+		let actual = Part2::solve(EXAMPLE_INPUT).unwrap().to_string();
 
 		assert_eq!(actual,expected);
 	}

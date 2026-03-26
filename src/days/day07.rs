@@ -318,7 +318,7 @@ impl Solution for Part1 {
 	const DAY: i32 = 7;
 	const PART: Part = Part::Part1;
 
-	fn solve(input:&str) -> impl Display {
+	fn solve(input:&str) -> anyhow::Result<impl Display> {
 
 		let ref mut manifold:Manifold = input.into();
 		let mut scanner:ManifoldScanner = manifold.into();
@@ -328,6 +328,7 @@ impl Solution for Part1 {
 		res.items.iter()
 			.flat_map(|maybe_b| maybe_b.map(|b| b.splits))
 			.sum::<usize>()
+			.ok()
 	}
 }
 
@@ -338,7 +339,7 @@ impl Solution for Part2 {
 	const DAY: i32 = 7;
 	const PART: Part = Part::Part2;
 
-	fn solve(input:&str) -> impl Display {
+	fn solve(input:&str) -> anyhow::Result<impl Display> {
 
 		let ref mut manifold:Manifold = input.into();
 		let mut scanner:ManifoldScanner = manifold.into();
@@ -348,6 +349,7 @@ impl Solution for Part2 {
 		final_beam_front.items.iter()
 			.flat_map(|maybe_b| maybe_b.map(|b| b.timelines))
 			.sum::<usize>()
+			.ok()
 	}
 
 }
@@ -393,12 +395,12 @@ mod test {
 	#[test]
 	fn test_example() {
 
-		let actual = Part1::solve(EXAMPLE_INPUT).to_string();
+		let actual = Part1::solve(EXAMPLE_INPUT).unwrap().to_string();
 		let expected = "21";
 
 		assert_eq!(actual, expected);
 
-		let actual = Part2::solve(EXAMPLE_INPUT).to_string();
+		let actual = Part2::solve(EXAMPLE_INPUT).unwrap().to_string();
 		let expected = "40";
 
 		assert_eq!(actual, expected);

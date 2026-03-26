@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+anyhow = "1.0.102"
 aoc_driver = "0.3.6"
 derive_more = { version = "2.1.0", features = ["full"] }
 funty = "3.0.0-rc2"

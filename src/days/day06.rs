@@ -103,11 +103,11 @@ impl Solution for Part1 {
 	const DAY: i32 = 6;
 	const PART: Part = Part::Part1;
 
-	fn solve(input:&str) -> impl Display {
+	fn solve(input:&str) -> anyhow::Result<impl Display> {
 
 		let (operands,operators) = parse(input);
 
-		compute_cols(operands, operators).iter().sum::<usize>()
+		compute_cols(operands, operators).iter().sum::<usize>().ok()
 	}
 }
 
@@ -133,7 +133,7 @@ impl Solution for Part2 {
 	const DAY: i32 = 6;
 	const PART: Part = Part::Part2;
 
-	fn solve(input:&str) -> impl Display {
+	fn solve(input:&str) -> anyhow::Result<impl Display> {
 
 		let lines = input.lines().collect_vec();
 
@@ -165,6 +165,7 @@ impl Solution for Part2 {
 				opnds.into_iter().reduce(|a,b| optr.compute(a,b)).unwrap()
 			})
 			.sum::<usize>()
+			.ok()
 	}
 }
 
@@ -242,12 +243,12 @@ mod test {
 	#[test]
 	fn test_example() {
 
-		let actual = Part1::solve(EXAMPLE_INPUT).to_string();
+		let actual = Part1::solve(EXAMPLE_INPUT).unwrap().to_string();
 		let expected = "4277556";
 
 		assert_eq!(actual,expected);
 
-		let actual = Part2::solve(EXAMPLE_INPUT).to_string();
+		let actual = Part2::solve(EXAMPLE_INPUT).unwrap().to_string();
 		let expected = "3263827";
 
 		assert_eq!(actual,expected);

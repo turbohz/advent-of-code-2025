@@ -280,6 +280,7 @@ impl Solution for Part1 {
 		machines
 			.map(|ref md| first_passing(md).unwrap().len() )
 			.sum::<usize>()
+			.ok()
 	}
 }
 
@@ -403,7 +404,7 @@ mod test {
 	#[test]
 	fn test_part1() {
 
-		let actual = Part1::solve(EXAMPLE_INPUT).to_string();
+		let actual = Part1::solve(EXAMPLE_INPUT).unwrap().to_string();
 		let expected = "7";
 
 		assert_eq!(actual,expected);

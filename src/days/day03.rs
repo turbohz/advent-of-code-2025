@@ -72,14 +72,16 @@ impl Solution for Part1 {
 	const DAY: i32 = 3;
 	const PART: Part = Part::Part1;
 
-	fn solve(input:&str) -> impl Display {
+	fn solve(input:&str) -> anyhow::Result<impl Display> {
 
 		let banks = parse(input,parser::bank);
 
 		banks.map(|b| {
 			let (fst,snd) = b.max_pair();
 			(fst*10+snd) as usize
-		}).sum::<usize>()
+		})
+		.sum::<usize>()
+		.ok()
 	}
 }
 
@@ -90,21 +92,21 @@ impl Solution for Part2 {
 	const DAY: i32 = 3;
 	const PART: Part = Part::Part2;
 
-	fn solve(input:&str) -> impl Display {
+	fn solve(input:&str) -> anyhow::Result<impl Display> {
 
 		let banks = parse(input,parser::bank);
 
 		banks.map(|b| {
-
-			let nums = b.max_of(12);
-			// assemble digits
-			nums.iter()
-				.map(u8::to_string)
-				.join("")
-				.parse::<usize>()
-				.unwrap()
-
-		}).sum::<usize>()
+				let nums = b.max_of(12);
+				// assemble digits
+				nums.iter()
+					.map(u8::to_string)
+					.join("")
+					.parse::<usize>()
+					.unwrap()
+			})
+			.sum::<usize>()
+			.ok()
 	}
 }
 
@@ -166,7 +168,7 @@ mod test {
 
 	#[test]
 	fn test_part1_example() {
-		let actual = Part1::solve(EXAMPLE_INPUT).to_string();
+		let actual = Part1::solve(EXAMPLE_INPUT).unwrap().to_string();
 		let expected = "357";
 		assert_eq!(actual,expected);
 	}

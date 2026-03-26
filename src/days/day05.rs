@@ -37,13 +37,15 @@ impl Solution for Part1 {
 	const DAY: i32 = 5;
 	const PART: Part = Part::Part1;
 
-	fn solve(input:&str) -> impl Display {
+	fn solve(input:&str) -> anyhow::Result<impl Display> {
 
 		let (ranges,ids) = parse(input);
 
 		ids.filter(|id| {
 			ranges.iter().any(|r| r.contains(id))
-		}).count()
+		})
+		.count()
+		.ok()
 	}
 }
 
@@ -103,7 +105,7 @@ impl Solution for Part2 {
 	const DAY: i32 = 5;
 	const PART: Part = Part::Part2;
 
-	fn solve(input:&str) -> impl Display {
+	fn solve(input:&str) -> anyhow::Result<impl Display> {
 
 		let (ranges,_) = parse(input);
 
@@ -141,7 +143,9 @@ impl Solution for Part2 {
 
 			st
 
-		}).into_count()
+		})
+		.into_count()
+		.ok()
 	}
 }
 
@@ -191,11 +195,11 @@ mod test {
 	#[test]
 	fn test_example() {
 
-		let actual = Part1::solve(EXAMPLE_INPUT).to_string();
+		let actual = Part1::solve(EXAMPLE_INPUT).unwrap().to_string();
 		let expected = "3";
 		assert_eq!(actual,expected);
 
-		let actual = Part2::solve(EXAMPLE_INPUT).to_string();
+		let actual = Part2::solve(EXAMPLE_INPUT).unwrap().to_string();
 		let expected = "14";
 		assert_eq!(actual,expected);
 	}

@@ -221,11 +221,11 @@ impl Solution for Part1 {
 	const DAY: i32 = 8;
 	const PART: Part = Part::Part1;
 
-	fn solve(input:&str) -> impl Display {
+	fn solve(input:&str) -> anyhow::Result<impl Display> {
 
 		let box_locations = parse(input).into_iter();
 		let distance_graph:UnGraph<Location3,Distance> = distance_graph(box_locations).into_graph();
-		Self::solve_for::<1000>(distance_graph)
+		Self::solve_for::<1000>(distance_graph).ok()
 	}
 }
 
@@ -258,7 +258,7 @@ impl Solution for Part2 {
 	const DAY: i32 = 8;
 	const PART: Part = Part::Part2;
 
-	fn solve(input:&str) -> impl Display {
+	fn solve(input:&str) -> anyhow::Result<impl Display> {
 
 		let box_locations = parse(input).into_iter();
 		let distance_graph:UnGraph<Location3,Distance> = distance_graph(box_locations).into_graph();
@@ -285,7 +285,9 @@ impl Solution for Part2 {
 
 			if connected_nodes >= total_nodes {
 
-				break distance_graph[edge.source()].x * distance_graph[edge.target()].x
+				let result = distance_graph[edge.source()].x * distance_graph[edge.target()].x;
+
+				break result.ok()
 			}
 		}
 
@@ -355,7 +357,7 @@ mod test {
 	fn test_part2() {
 
 		let expected = "25272";
-		let actual = Part2::solve(EXAMPLE_INPUT).to_string();
+		let actual = Part2::solve(EXAMPLE_INPUT).unwrap().to_string();
 		assert_eq!(actual,expected)
 	}
 }

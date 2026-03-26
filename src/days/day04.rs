@@ -136,13 +136,15 @@ impl Solution for Part1 {
 	const DAY: i32 = 4;
 	const PART: Part = Part::Part1;
 
-	fn solve(input:&str) -> impl Display {
+	fn solve(input:&str) -> anyhow::Result<impl Display> {
 
 		let grid = Grid::new(input);
 
 		grid.roll_locations().filter(|&i| {
 			grid.has_reachable_roll_at(i)
-		}).count()
+		})
+		.count()
+		.ok()
 	}
 }
 struct Part2;
@@ -152,7 +154,7 @@ impl Solution for Part2 {
 	const DAY: i32 = 4;
 	const PART: Part = Part::Part2;
 
-	fn solve(input:&str) -> impl Display {
+	fn solve(input:&str) -> anyhow::Result<impl Display> {
 
 		let mut grid = Grid::new(input);
 
@@ -167,7 +169,7 @@ impl Solution for Part2 {
 				.collect_vec();
 
 			if to_be_removed.is_empty() {
-				break total_removed;
+				break total_removed.ok();
 			} else {
 				to_be_removed.iter().for_each(|&i| { grid[i] = Cell::Empty });
 				total_removed += to_be_removed.len();
@@ -200,12 +202,12 @@ mod test {
 	#[test]
 	fn test_example() {
 
-		let actual = Part1::solve(EXAMPLE_INPUT).to_string();
+		let actual = Part1::solve(EXAMPLE_INPUT).unwrap().to_string();
 		let expected = "13";
 
 		assert_eq!(actual,expected);
 
-		let actual = Part2::solve(EXAMPLE_INPUT).to_string();
+		let actual = Part2::solve(EXAMPLE_INPUT).unwrap().to_string();
 		let expected = "43";
 
 		assert_eq!(actual,expected)
