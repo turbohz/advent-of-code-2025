@@ -12,6 +12,7 @@ mod day06;
 mod day07;
 mod day08;
 mod day10;
+mod day11;
 
 use super::*;
 
@@ -71,7 +72,7 @@ trait Solution {
 
 /// A generic parse for multiline input
 /// Takes a Rust-peg parse function that is applied to every line
-fn parse<'a,T>(input: &'a str, parse:fn(&'a str) -> Result<T,ParseError<LineCol>>) -> impl Iterator<Item=T> + use<'a,T> {
+fn parse<'a,T>(input: &'a str, parse:fn(&'a str) -> Result<T,ParseError<LineCol>>) -> impl Clone+DoubleEndedIterator<Item=T> + use<'a,T> {
 	input.lines().map(move |l| {
 		parse(l)
 			.inspect_err(|e| eprintln!("Failed parsing {l}: {e}"))
