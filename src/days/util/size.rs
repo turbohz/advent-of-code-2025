@@ -2,7 +2,7 @@ pub trait HasSize {
 	fn size(&self)->Size;
 }
 
-#[derive(Debug,Clone,Copy)]
+#[derive(Debug,Clone,Copy,PartialEq,Eq,PartialOrd,Ord)]
 pub struct Size {
 	pub width:usize,
 	pub height:usize,

@@ -1,4 +1,8 @@
+use derive_more::{Display, Sub};
+
 #[derive(Debug,Clone,Copy,PartialEq,Eq)]
+#[derive(Display,Sub)]
+#[display("[{x},{y}]")]
 pub struct Location {
 	pub x:usize,
 	pub y:usize,
