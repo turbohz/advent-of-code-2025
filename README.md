@@ -1,9 +1,16 @@
 # Advent of Code 2025
 
-Solutions to the **[Advent of Code 2025](https://adventofcode.com/2025)** challenges, using the Rust programming language.
+Solutions to the **[Advent of Code 2025](https://adventofcode.com/2025)** challenges,
+using the Rust programming language.
 
 > This document and the solutions are a work in progress,
 > and may often be reviewed and reworked.
+
+## Status
+
+As of Thursday the 28th of 2025, all problems have been solved.
+
+![Advent of Code 2025 board, all light up](aoc-2025.png)
 
 ## About these solutions
 
