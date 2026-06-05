@@ -1,9 +1,9 @@
 // https://adventofcode.com/2025/day/11
 
-use std::{any, collections::{BTreeSet, HashSet}, thread};
+use std::{any, collections::{BTreeSet, HashSet}, hash::{BuildHasher, Hash, Hasher}, ops::Index, thread};
 
 use super::*;
-use anyhow::{Context, bail};
+use anyhow::{Context, anyhow, bail};
 use derive_more::{Deref, DerefMut, Display, From, Index, Into};
 
 mod parse {
@@ -56,7 +56,7 @@ use funty::{AtMost32, Integral, Unsigned};
 use heapless::{deque::IntoIter, vec};
 use num::iter::RangeStepInclusive;
 use parse::{DeviceDescription,parser};
-use petgraph::{Direction::Outgoing, acyclic::Acyclic, csr::IndexType, graph::{self, DiGraph, NodeIndex}, visit::{GraphBase, IntoNeighborsDirected, NodeCount, Visitable}};
+use petgraph::{Direction::Outgoing, acyclic::Acyclic, csr::IndexType, graph::{DiGraph, NodeIndex}, visit::GraphBase};
 
 #[derive(Clone,Copy,PartialEq,PartialOrd,Eq,Ord,Default)]
 #[derive(From,Display)]
@@ -176,17 +176,7 @@ fn graph_edges<T>(descriptions: T, dict:&DeviceDict) -> anyhow::Result<Vec<(Id,I
 		})
 }
 
-fn all_simple_paths<G,N>(graph:G,start:N,end:N) -> impl Iterator<Item = Vec<<G as GraphBase>::NodeId>>
-	where
-		G: NodeCount + IntoNeighborsDirected,
-		G::NodeId: std::cmp::Eq + std::hash::Hash,
-		N:Into<G::NodeId>,
-{
-
-	petgraph::algo::all_simple_paths::<Vec<_>, _, std::hash::RandomState>(graph,start.into(),end.into(),0,None)
-}
-
-type DGraph = DiGraph<(),(),Id>;
+type DGraph = DiGraph<bool,(),Id>;
 
 struct DeviceMap { graph: Acyclic<DGraph>, dict:DeviceDict }
 
@@ -197,10 +187,12 @@ impl TryFrom<&str> for DeviceMap {
 
 		let descriptions = parse(input,parser::device);
 		let dict = DeviceDict::from(&descriptions);
-		let edges = graph_edges(descriptions, &dict).expect("A complete list of graph edges");
-		let graph = Acyclic::try_from_graph(DGraph::from_edges(edges)).expect("Graph should be acyclic");
+		let edges = graph_edges(descriptions, &dict).context("A complete list of graph edges")?;
+		let dgraph = DGraph::from_edges(edges);
+		let dagraph = Acyclic::try_from_graph(dgraph)
+			.map_err(|c| anyhow!("Graph should be acyclic, but found cycle: {c:?}"))?;
 
-		Ok(DeviceMap { dict, graph })
+		Ok(DeviceMap { dict, graph: dagraph })
 	}
 }
 
@@ -213,14 +205,17 @@ impl Solution for Part1 {
 
 	fn solve(input:&str) -> anyhow::Result<impl Display> {
 
+		use petgraph::algo::all_simple_paths;
+		use std::hash::RandomState;
+
 		let DeviceMap { graph, dict } = DeviceMap::try_from(input)
 			.context("Failed to build DeviceMap")?;
 
 		let start = dict.id("you").context("Invalid node name")?;
 		let end   = dict.id("out").context("Invalid node name")?;
-		let paths = all_simple_paths(&graph, start,end);
+		let paths = all_simple_paths::<Vec<_>, _, RandomState>(&graph, start.into(),end.into(),1,None);
 
-		paths.count().to_string().ok()
+		paths.count().ok()
 	}
 }
 
@@ -238,7 +233,6 @@ impl Solution for Part2 {
 	fn solve(input:&str) -> anyhow::Result<impl Display> {
 
 		use petgraph::{algo, prelude::*};
-		use std::hash::RandomState;
 
 		fn node(dict:&DeviceDict,name:&str) -> NodeIndex<Id> {
 			dict.id(name).map(NodeIndex::from).expect("Invalid node name")
@@ -253,46 +247,78 @@ impl Solution for Part2 {
 		// searching paths from dac->out.
 		// We can do that, because the graph is acyclic:
 		// Any reachable node from dac that reached back to ttf would create a cycle.
-		let mut sgraph:StableDiGraph<(),(),Id> = graph.into_inner().into();
+		let sgraph:StableDiGraph<bool,(),Id> = graph.into_inner().into();
 
-		let dac_out = {
-			let from = node(dict,"dac");
-			let to = node(dict,"out");
-			let paths = all_simple_paths(&sgraph, from, to);
-			let mut reject = BTreeSet::<NodeIndex<Id>>::new();
+		type NodeId = <StableDiGraph<bool,(),Id> as GraphBase>::NodeId;
 
-			let total = paths.inspect(|p| {
-				p.iter().for_each(|n| { reject.insert(*n); });
-			}).count();
+		// A reworked, simplified and optimized version of
+		// `petgraph::algo::simple_paths::all_simple_paths()`
+		fn count_and_mark_visited(mut sgraph:StableDiGraph<bool,(),Id>, from: impl Into<NodeId>, to:impl Into<NodeId>) -> (StableDiGraph<bool,(),Id>,usize) {
 
-			// We avoid removing dac
-			reject.remove(&from);
-			reject.into_iter().for_each(|n| { sgraph.remove_node(n); } );
+			let from:NodeId = from.into();
+			let to:NodeId = to.into();
 
-			total
-		};
+			let min_length = 1;
 
-		// We'll use another trick, so this time we won't remove any node.
+			let total_nodes = sgraph.node_count();
 
-		let fft_dac = {
-			let from = node(dict,"fft");
-			let to = node(dict,"dac");
-			let paths = all_simple_paths(&sgraph, from, to);
+			// list of visited nodes
+			let mut current_path: Vec<NodeId> = Vec::with_capacity(total_nodes);
 
-			paths.count()
-		};
+			// list of childs of currently exploring path nodes,
+			// last elem is list of childs of last visited node
+			let mut stack = vec![sgraph.neighbors_directed(from, Outgoing).detach()];
+
+			let mut count:usize = 0;
+
+			while let Some(children) = stack.last_mut() {
+				if let Some((_,child)) = children.next(&sgraph) {
+
+					// mark all visited nodes, for potential later removal
+					sgraph[child] = true;
+
+					if child == to {
+						if current_path.len() >= min_length {
+							count += 1
+						}
+					} else {
+						current_path.push(child);
+						stack.push(sgraph.neighbors_directed(child, Outgoing).detach());
+					}
+				} else {
+					current_path.pop();
+					stack.pop();
+				}
+			}
+
+			(sgraph,count)
+		}
+
+		// dac -> out
+
+		let from = node(dict,"dac");
+		let to = node(dict,"out");
+
+		let (mut sgraph,dac_out) = count_and_mark_visited(sgraph, from, to);
+
+		sgraph.retain_nodes(|g,n| !g.node_weight(n).unwrap());
+
+		// fft -> dac
+
+		let from = node(dict,"fft");
+		let to = node(dict,"dac");
+
+		let (mut sgraph,fft_dac) = count_and_mark_visited(sgraph, from, to);
+
+		// svr -> fft
 
 		// Reversing the graph, we can instead count the paths from ttf->svr,
 		// reducing our seach space.
+
 		sgraph.reverse();
-
-		let svr_fft = {
-
-			let from = node(dict,"fft");
-			let to = node(dict,"svr");
-			let paths = all_simple_paths(&sgraph, from, to);
-			paths.count()
-		};
+		let from = node(dict,"fft");
+		let to = node(dict,"svr");
+		let (_, svr_fft) = count_and_mark_visited(sgraph, from, to);
 
 		let total = svr_fft * fft_dac * dac_out;
 

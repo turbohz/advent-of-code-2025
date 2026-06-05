@@ -39,3 +39,7 @@ toplevel_ref_arg = "allow"
 [profile.release]
 lto = "thin"
 codegen-units = 4
+
+[profile.profile]
+inherits = "release"
+debug = true
